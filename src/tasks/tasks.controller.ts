@@ -6,8 +6,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { GetTaskFilterDto } from './dto/get-task-filter.dto';
 import { Task, TaskStatus } from './task.model';
 import { TasksService } from './tasks.service';
 
@@ -16,8 +18,12 @@ export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  getAllTasks(): Task[] {
-    return this.tasksService.getAllTasks();
+  getAllTasks(@Query() filterDto: GetTaskFilterDto): Task[] {
+    if (Object.keys(filterDto).length) {
+      return this.tasksService.getFilteredTasks(filterDto);
+    } else {
+      return this.tasksService.getAllTasks();
+    }
   }
   @Get('/:id')
   getTaskById(@Param('id') id: string): Task {
@@ -32,7 +38,7 @@ export class TasksController {
     return this.tasksService.createTask(createTaskDto);
   }
 
-  @Patch('/:id')
+  @Patch('/:id/status')
   updateTask(
     @Param('id') id: string,
     @Body('status') status: TaskStatus,
